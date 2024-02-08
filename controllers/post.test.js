@@ -68,5 +68,94 @@ describe('Post controller', () => {
         });
 
     });
+    
+    describe('Edit Post', () => {
+        let updatePostStub;
+
+        beforeEach(() => {
+            req.params = { id: 'post_id' };
+            req.body = {
+                title: 'Updated title',
+                content: 'Updated content'
+            };
+
+            res = {
+                status: sinon.stub().returns({ end: sinon.spy() }),
+                redirect: sinon.spy()
+            };
+        });
+
+        afterEach(() => {
+            updatePostStub.restore();
+        });
+
+        it('successfully updates the title', () => {
+
+            expectedResult = {
+                _id: 'post_id',
+                title: 'Updated title',
+                content: 'Random content',
+                author: 'stswenguser',
+                date: Date.now()
+            };
+
+            updatePostStub = sinon.stub(postModel, 'update').yields(null, expectedResult);
+
+            postController.editPost(req, res);
+            sinon.assert.calledWith(postModel.update, req.params.id, req.body);
+            sinon.assert.calledWithMatch(postModel.update, req.params.id, {
+                title: expectedResult.title,
+                content: req.body.content,
+                author: req.body.author
+            });
+            sinon.assert.calledWith(res.redirect, '/posts');
+        });
+
+        it('successfully updates the content', () => {
+            expectedResult = {
+                _id: 'post_id',
+                title: 'My first test post',
+                content: 'Updated content',
+                author: 'stswenguser',
+                date: Date.now()
+            };
+
+            updatePostStub = sinon.stub(postModel, 'update').yields(null, expectedResult);
+
+            postController.editPost(req, res);
+            sinon.assert.calledWith(postModel.update, req.params.id, req.body);
+            sinon.assert.calledWithMatch(postModel.update, req.params.id, {
+                title: req.body.title,
+                content:  expectedResult.title,
+                author: req.body.author
+            });
+            sinon.assert.calledWith(res.redirect, '/posts');
+        });
+
+        it('should redirect to /posts/:post_id if editing is successful', () => {
+            expectedResult = {
+                _id: 'post_id',
+                title: 'Updated title',
+                content: 'Updated content',
+                author: 'stswenguser',
+                date: Date.now()
+            };
+        
+            updatePostStub = sinon.stub(postModel, 'update').yields(null, expectedResult);
+        
+            postController.editPost(req, res);
+            sinon.assert.calledWith(postModel.update, req.params.id, req.body);
+            sinon.assert.calledWith(res.redirect, '/posts/' + req.params.id);
+        });
+        
+        it('should redirect to /posts/edit/:id if post editing is unsuccessful', () => {
+            updatePostStub = sinon.stub(postModel, 'update').yields(new Error('Failed to update post'));
+        
+            postController.editPost(req, res);
+            sinon.assert.calledWith(postModel.update, req.params.id, req.body);
+            sinon.assert.calledWith(res.redirect, '/posts/edit/' + req.params.id);
+        });
+        
+    });
 
 });
