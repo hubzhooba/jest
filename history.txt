@@ -1,0 +1,6 @@
+git branch test-add-post
+git commit -am "Added test for success and fail post creation"
+git push origin test-add-post
+git commit -am "Update test.post.js"
+git push origin test-add-post
+git add history.txt && git commit -m "Add terminal command history" && git push origin test-add-post
